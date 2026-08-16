@@ -2,6 +2,20 @@
 
 A lightweight, self-hosted RabbitMQ queue management and delivery status log panel with a modern Web UI.
 
+---
+
+### Why Replay Manager?
+
+Have you ever had a failed RabbitMQ message and needed to answer:
+- **Was it delivered?**
+- **Why did it fail?**
+- **Can I replay only this message?**
+- **Do I need to dig through application logs?**
+
+Replay Manager provides delivery tracking, error visibility and one-click replay **without replacing RabbitMQ or writing heavy custom logger scripts**.
+
+---
+
 Replay Manager is a resource-efficient, plug-and-play tool designed to track outbound message delivery SLA, log event histories, and trigger manual re-delivery (Replay) of failed events in one click. It is an excellent alternative to heavy distributed tracing systems (like ELK/Jaeger) or complex data flows (like Apache NiFi) for microservice environments.
 
 ---
@@ -15,6 +29,16 @@ Replay Manager is a resource-efficient, plug-and-play tool designed to track out
 - **Stats Dashboard Grid**: Immediate overview of total log count and per-queue message statistics. Click on any queue card to instantly list the latest 30 events.
 - **Extremely Lightweight**: Built on FastAPI and SQLite (WAL mode). Runs inside Docker consuming **less than 50MB RAM**.
 - **Auto-pruning Worker**: Built-in background daemon that cleans up database events older than 30 days.
+
+---
+
+## When NOT to use Replay Manager
+
+While Replay Manager is a great fit for lightweight logging and delivery tracking, it is **not** designed for:
+
+- 🛑 **High-Throughput Analytics**: Logging millions of messages per minute to SQLite will cause database locks and disk I/O bottlenecks. Use Apache Kafka or ELK/ClickHouse for heavy logging.
+- 🛑 **Replacing Message Brokers**: Replay Manager does not route or persist messages for your core application flow; it is an out-of-band observer. RabbitMQ remains your message broker.
+- 🛑 **Deep Distributed Tracing**: If you need to trace parent-child span requests across 50 microservices in a complex service mesh, use dedicated tracing tools like Jaeger, Zipkin, or OpenTelemetry.
 
 ---
 
