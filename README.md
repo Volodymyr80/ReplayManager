@@ -8,13 +8,13 @@ Replay Manager is a resource-efficient, plug-and-play tool designed to track out
 
 ## Key Features
 
-- ⏳ **Real-Time SLA Status Tracking**: Track message lifecycle statuses: `PENDING` (Received), `DELIVERED` (Success), `FAILED` (Error), and `SKIPPED` (Soft-drops/business exclusions).
-- 🔄 **One-Click Message Replay**: Re-publish failed or stale events back to their original queue with a single button click in the UI.
-- ⚡ **Canonical JSON Payload Hashing**: Leverages sorting-safe SHA256 canonical hashing to track messages across microservices without modifying payload structures.
-- 🌍 **Multilingual (EN / UA)**: Smooth on-the-fly UI switching between English and Ukrainian with dark/light theme state persistence.
-- 📈 **Stats Dashboard Grid**: Immediate overview of total log count and per-queue message statistics. Click on any queue card to instantly list the latest 30 events.
-- 🪶 **Extremely Lightweight**: Built on FastAPI and SQLite (WAL mode). Runs inside Docker consuming **less than 50MB RAM**.
-- 🧹 **Auto-pruning Worker**: Built-in background daemon that cleans up database events older than 30 days.
+- **Real-Time SLA Status Tracking**: Track message lifecycle statuses: `PENDING` (Received), `DELIVERED` (Success), `FAILED` (Error), and `SKIPPED` (Soft-drops/business exclusions).
+- **One-Click Message Replay**: Re-publish failed or stale events back to their original queue with a single button click in the UI.
+- **Canonical JSON Payload Hashing**: Leverages sorting-safe SHA256 canonical hashing to track messages across microservices without modifying payload structures.
+- **Multilingual (EN / UA)**: Smooth on-the-fly UI switching between English and Ukrainian with dark/light theme state persistence.
+- **Stats Dashboard Grid**: Immediate overview of total log count and per-queue message statistics. Click on any queue card to instantly list the latest 30 events.
+- **Extremely Lightweight**: Built on FastAPI and SQLite (WAL mode). Runs inside Docker consuming **less than 50MB RAM**.
+- **Auto-pruning Worker**: Built-in background daemon that cleans up database events older than 30 days.
 
 ---
 
