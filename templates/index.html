@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Replay Manager - Queue Management Control Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(20, 26, 46, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-blue-glow: rgba(59, 130, 246, 0.35);
+            --accent-green: #10b981;
+            --accent-green-glow: rgba(16, 185, 129, 0.2);
+            --accent-red: #ef4444;
+            --accent-red-glow: rgba(239, 68, 68, 0.2);
+            --accent-yellow: #f59e0b;
+            --accent-yellow-glow: rgba(245, 158, 11, 0.2);
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 2rem 1rem;
+            overflow-y: scroll;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header Style */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .brand h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .brand p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--accent-green);
+            font-weight: 500;
+            transition: all var(--transition-speed);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Search Section */
+        .search-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .search-card h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .search-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: all var(--transition-speed);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-blue);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 15px var(--accent-blue-glow);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #1d4ed8 100%);
+            border: none;
+            color: white;
+            padding: 0 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+            font-family: inherit;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px var(--accent-blue-glow);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Results / Timeline Section */
+        .results-section {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .results-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            padding-left: 4px;
+            border-left: 3px solid var(--accent-blue);
+            padding-left: 10px;
+        }
+
+        .timeline {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 24px;
+            bottom: 24px;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            position: relative;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .timeline-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #141b2e;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            z-index: 1;
+            flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: all var(--transition-speed);
+        }
+
+        .timeline-item.SUCCESS .timeline-badge {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green-glow);
+        }
+
+        .timeline-item.FAILED .timeline-badge {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red-glow);
+        }
+
+        .timeline-item.PENDING .timeline-badge {
+            border-color: var(--accent-yellow);
+            color: var(--accent-yellow);
+            box-shadow: 0 0 8px var(--accent-yellow-glow);
+        }
+
+        .timeline-card {
+            flex-grow: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: all var(--transition-speed);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .event-type {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text-primary);
+        }
+
+        .event-time {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+
+        .card-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-pill {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .SUCCESS .status-pill {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .FAILED .status-pill {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+
+        .PENDING .status-pill {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--accent-yellow);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+        }
+
+        .SKIPPED .status-pill {
+            background: rgba(148, 163, 184, 0.12);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+
+        .action-btn {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            color: #60a5fa;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            font-family: inherit;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+            box-shadow: 0 0 10px var(--accent-blue-glow);
+            transform: translateY(-1px);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Payload / Code Viewer */
+        .payload-wrapper {
+            margin-top: 4px;
+        }
+
+        .payload-toggle {
+            background: none;
+            border: none;
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .payload-toggle:hover {
+            color: #60a5fa;
+            text-decoration: underline;
+        }
+
+        .payload-content {
+            display: none;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Consolas', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #38bdf8;
+            line-height: 1.5;
+            margin-top: 8px;
+            overflow-x: auto;
+            max-height: 250px;
+        }
+
+        .error-banner {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: rgba(20, 26, 46, 0.95);
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 250px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .toast.success { border-left: 4px solid var(--accent-green); }
+        .toast.error { border-left: 4px solid var(--accent-red); }
+
+        /* Helpers/Empty states */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 3rem 0;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            stroke: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .loading-spinner {
+            display: none;
+            align-self: center;
+            border: 3px solid rgba(255,255,255,0.05);
+            border-top: 3px solid var(--accent-blue);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-top: 0.5rem;
+            animation: fadeIn 0.7s ease-out;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            transition: all var(--transition-speed);
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.1);
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        /* Light Theme overrides */
+        body.light-theme {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-blue-glow: rgba(59, 130, 246, 0.15);
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(59, 130, 246, 0.06) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
+        }
+
+        body.light-theme .theme-toggle-btn:hover, body.light-theme .lang-toggle-btn:hover {
+            background: rgba(0,0,0,0.03);
+            border-color: rgba(0,0,0,0.15);
+        }
+
+        body.light-theme .timeline::before {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .timeline-badge {
+            background: #f1f5f9;
+        }
+
+        body.light-theme .search-input {
+            background: rgba(0, 0, 0, 0.02);
+            color: #0f172a;
+        }
+
+        body.light-theme .search-input:focus {
+            background: #ffffff;
+        }
+
+        body.light-theme .payload-content {
+            background: rgba(0, 0, 0, 0.03);
+            color: #0369a1;
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .stat-card:hover {
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.08);
+        }
+
+        footer a:hover {
+            color: #60a5fa !important;
+            text-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
+        }
+
+        body.light-theme footer a:hover {
+            color: #1d4ed8 !important;
+            text-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="brand">
+            <h1 data-i18n="title">Replay Manager</h1>
+            <p data-i18n="subtitle">RabbitMQ Queue Management & Log Panel</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button onclick="toggleLang()" class="lang-toggle-btn" style="background: none; border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; transition: all var(--transition-speed); outline: none;">
+                <span id="lang-text">UA</span>
+            </button>
+            <button onclick="toggleTheme()" class="theme-toggle-btn" style="background: none; border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; transition: all var(--transition-speed); outline: none;">
+                <span id="theme-icon">☀️</span> <span id="theme-text" data-i18n="themeLight">Light Theme</span>
+            </button>
+            <div class="system-status" id="status-badge">
+                <span class="status-dot"></span>
+                <span id="status-text" data-i18n="statusActive">Logger Active</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="stats-grid" id="stats-grid">
+        <!-- Will be populated dynamically -->
+    </div>
+
+    <main class="search-card">
+        <h2 data-i18n="searchTitle">Search Ticket / Order History</h2>
+        <div class="search-group">
+            <div class="search-input-wrapper">
+                <input type="text" id="ticket-search" class="search-input" placeholder="Enter ticket ID (e.g. 139120)..." data-i18n="searchPlaceholder" autocomplete="off">
+            </div>
+            <button onclick="performSearch()" class="search-btn" data-i18n="searchBtn">Search</button>
+        </div>
+    </main>
+
+    <div class="loading-spinner" id="global-spinner"></div>
+
+    <section class="results-section" id="results-container">
+        <h3 class="results-header" id="results-title" data-i18n="timelineTitle">Ticket Timeline</h3>
+        <div class="timeline" id="timeline-flow">
+            <!-- Timeline items injected here -->
+        </div>
+    </section>
+    
+    <footer style="text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-secondary); width: 100%; transition: all var(--transition-speed);">
+        &copy; 2026 Replay Manager. Developed by <a href="https://bohatyrov.com" target="_blank" style="color: var(--accent-blue); text-decoration: none; font-weight: 600; transition: all var(--transition-speed);">Volodymyr Bohatyrov</a>. All rights reserved.
+    </footer>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+    const searchInput = document.getElementById('ticket-search');
+    const spinner = document.getElementById('global-spinner');
+    const resultsSection = document.getElementById('results-container');
+    const timeline = document.getElementById('timeline-flow');
+    const resultsTitle = document.getElementById('results-title');
+
+    // Language Dictionary (i18n)
+    const translations = {
+        en: {
+            title: "Replay Manager",
+            subtitle: "RabbitMQ Queue Management & Log Panel",
+            statusActive: "Logger Active",
+            statusInactive: "Logger Inactive",
+            statusUnknown: "Status Unknown",
+            searchTitle: "Search Ticket / Order History",
+            searchPlaceholder: "Enter ticket ID (e.g. 139120)...",
+            searchBtn: "Search",
+            themeDark: "Dark Theme",
+            themeLight: "Light Theme",
+            statsTotal: "Total (30 Days)",
+            timelineTitle: "Ticket Timeline",
+            statusDelivered: "DELIVERED",
+            emptyState: "No messages found.",
+            btnReplay: "Replay",
+            btnReplaying: "Sending...",
+            toastSuccessReplay: "Message successfully replayed to queue!",
+            toastErrorReplay: "Replay error: ",
+            toastErrorStats: "Failed to load database stats",
+            toastErrorTicket: "Failed to load ticket history",
+            toastErrorQueue: "Failed to load queue events",
+            viewJson: "View JSON Content ▶",
+            hideJson: "Hide JSON Content ▼",
+            skipReason: "Skip Reason",
+            errorLabel: "Error",
+            ticketLabel: "Ticket",
+            processedLabel: "Processed"
+        },
+        uk: {
+            title: "Replay Manager",
+            subtitle: "Панель керування та логування черг RabbitMQ",
+            statusActive: "Логер активний",
+            statusInactive: "Логер неактивний",
+            statusUnknown: "Статус невідомий",
+            searchTitle: "Пошук історії замовлень / тикетів",
+            searchPlaceholder: "Введіть ID заявки (наприклад, 139120)...",
+            searchBtn: "Знайти",
+            themeDark: "Темна тема",
+            themeLight: "Світла тема",
+            statsTotal: "Всього за 30 днів",
+            timelineTitle: "Хронологія тікета",
+            statusDelivered: "DELIVERED",
+            emptyState: "Повідомлень не знайдено.",
+            btnReplay: "Replay",
+            btnReplaying: "Надсилаю...",
+            toastSuccessReplay: "Повідомлення успішно повернуто в чергу!",
+            toastErrorReplay: "Помилка реплею: ",
+            toastErrorStats: "Не вдалося завантажити статистику",
+            toastErrorTicket: "Не вдалося отримати історію тікета",
+            toastErrorQueue: "Не вдалося отримати події для черги",
+            viewJson: "Подивитись вміст JSON ▶",
+            hideJson: "Приховати вміст JSON ▼",
+            skipReason: "Причина пропуску",
+            errorLabel: "Помилка",
+            ticketLabel: "Тікет",
+            processedLabel: "Оброблено"
+        }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'en';
+
+    function applyTranslations() {
+        const langData = translations[currentLang];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (langData[key]) {
+                if (el.tagName === 'INPUT') {
+                    el.placeholder = langData[key];
+                } else {
+                    el.textContent = langData[key];
+                }
+            }
+        });
+        
+        // Update language button text
+        document.getElementById('lang-text').textContent = currentLang === 'en' ? 'UA' : 'EN';
+        
+        // Update theme text based on active class
+        const isLight = document.body.classList.contains('light-theme');
+        document.getElementById('theme-text').textContent = isLight 
+            ? langData.themeLight 
+            : langData.themeDark;
+    }
+
+    function toggleLang() {
+        currentLang = currentLang === 'en' ? 'uk' : 'en';
+        localStorage.setItem('lang', currentLang);
+        applyTranslations();
+        loadStats(); // reload stats to translate total card label
+    }
+
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <span>${message}</span>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function renderEvents(data, titleText) {
+        resultsSection.style.display = 'flex';
+        resultsTitle.textContent = titleText;
+        timeline.innerHTML = '';
+
+        const langData = translations[currentLang];
+
+        if (data.length === 0) {
+            timeline.innerHTML = `
+                <div class="empty-state">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p>${langData.emptyState}</p>
+                </div>
+            `;
+            return;
+        }
+
+        data.forEach((event) => {
+            const item = document.createElement('div');
+            item.className = `timeline-item ${event.status}`;
+            
+            // Format event date
+            const localDate = new Date(event.created_at + 'Z').toLocaleString(currentLang === 'uk' ? 'uk-UA' : 'en-US');
+            const updateDate = event.status !== 'PENDING' ? ` | ${langData.processedLabel}: ${new Date(event.updated_at + 'Z').toLocaleString(currentLang === 'uk' ? 'uk-UA' : 'en-US')}` : '';
+            
+            // Try format JSON payload beautifully and extract business status
+            let formattedPayload = event.payload;
+            let businessStatusLabel = "";
+            try {
+                const parsed = JSON.parse(event.payload);
+                formattedPayload = JSON.stringify(parsed, null, 2);
+                
+                // GLPI Status Mapping
+                const glpiStatus = parsed.status !== undefined ? String(parsed.status) : null;
+                if (glpiStatus) {
+                    const statusMapEn = {
+                        "new.ticket": "New Ticket",
+                        "1": "New (1)",
+                        "2": "In Progress (2)",
+                        "3": "Planned (3)",
+                        "4": "On Hold (4)",
+                        "5": "Resolved (5)",
+                        "6": "Closed (6)",
+                        "cancellation": "Cancelled (6)"
+                    };
+                    const statusMapUa = {
+                        "new.ticket": "Нова заявка",
+                        "1": "Нова (1)",
+                        "2": "В роботі (2)",
+                        "3": "Заплановано (3)",
+                        "4": "На паузі (4)",
+                        "5": "Вирішено (5)",
+                        "6": "Закрито (6)",
+                        "cancellation": "Скасовано (6)"
+                    };
+                    const activeMap = currentLang === 'uk' ? statusMapUa : statusMapEn;
+                    businessStatusLabel = ` | Status: ${activeMap[glpiStatus] || glpiStatus}`;
+                }
+            } catch(e) {}
+
+            const statusText = event.status === 'SUCCESS' ? langData.statusDelivered : event.status;
+
+            item.innerHTML = `
+                <div class="timeline-badge">
+                    ${getBadgeIcon(event.status)}
+                </div>
+                <div class="timeline-card">
+                    <div class="card-header">
+                        <div class="card-meta">
+                            <span class="event-type">${event.routing_key}${businessStatusLabel} (${langData.ticketLabel} #${event.ticket_id})</span>
+                            <span class="event-time">${localDate}${updateDate}</span>
+                        </div>
+                        <div class="card-actions">
+                            <span class="status-pill">${statusText}</span>
+                            <button class="action-btn" onclick="triggerReplay(${event.id}, this)">${langData.btnReplay}</button>
+                        </div>
+                    </div>
+                    
+                    ${event.error_message ? `
+                        <div class="${event.status === 'SKIPPED' ? 'skipped-banner' : 'error-banner'}" style="${event.status === 'SKIPPED' ? 'background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2); color: #cbd5e1; padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; margin-top: 8px;' : ''}">
+                            ${event.status === 'SKIPPED' ? langData.skipReason : langData.errorLabel}: ${escapeHtml(event.error_message)}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="payload-wrapper">
+                        <button class="payload-toggle" onclick="togglePayload(this)">
+                            ${langData.viewJson}
+                        </button>
+                        <pre class="payload-content">${escapeHtml(formattedPayload)}</pre>
+                    </div>
+                </div>
+            `;
+            timeline.appendChild(item);
+        });
+    }
+
+    async function performSearch() {
+        const query = searchInput.value.trim();
+        const langData = translations[currentLang];
+        if (!query) {
+            showToast(currentLang === 'uk' ? 'Будь ласка, введіть ID заявки' : 'Please enter ticket ID', 'error');
+            return;
+        }
+
+        spinner.style.display = 'block';
+        resultsSection.style.display = 'none';
+        timeline.innerHTML = '';
+
+        try {
+            const response = await fetch(`/api/tickets/${encodeURIComponent(query)}`);
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+
+            spinner.style.display = 'none';
+            const timelineTitleText = currentLang === 'uk' 
+                ? `Хронологія для тікета #${query} (${data.length} подій)`
+                : `Timeline for ticket #${query} (${data.length} events)`;
+            renderEvents(data, timelineTitleText);
+        } catch (e) {
+            spinner.style.display = 'none';
+            showToast(langData.toastErrorTicket, 'error');
+            console.error(e);
+        }
+    }
+
+    function getBadgeIcon(status) {
+        if (status === 'SUCCESS') return '✓';
+        if (status === 'FAILED') return '✗';
+        if (status === 'SKIPPED') return '⊘';
+        return '•';
+    }
+
+    function togglePayload(btn) {
+        const content = btn.nextElementSibling;
+        const langData = translations[currentLang];
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+            btn.textContent = langData.viewJson;
+        } else {
+            content.style.display = 'block';
+            btn.textContent = langData.hideJson;
+        }
+    }
+
+    async function triggerReplay(eventId, btn) {
+        const langData = translations[currentLang];
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = langData.btnReplaying;
+
+        try {
+            const response = await fetch(`/api/events/${eventId}/retry`, {
+                method: 'POST'
+            });
+            const resData = await response.json();
+            
+            if (response.ok && resData.status === 'success') {
+                showToast(langData.toastSuccessReplay);
+                setTimeout(performSearch, 1000);
+            } else {
+                throw new Error(resData.message || 'Error');
+            }
+        } catch (e) {
+            showToast(`${langData.toastErrorReplay}${e.message}`, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        body.classList.toggle('light-theme');
+        const isLight = body.classList.contains('light-theme');
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        updateThemeUI(isLight);
+    }
+
+    function updateThemeUI(isLight) {
+        const icon = document.getElementById('theme-icon');
+        const text = document.getElementById('theme-text');
+        const langData = translations[currentLang];
+        if (isLight) {
+            icon.textContent = '🌙';
+            text.textContent = langData.themeDark;
+        } else {
+            icon.textContent = '☀️';
+            text.textContent = langData.themeLight;
+        }
+    }
+
+    async function checkSystemStatus() {
+        const dot = document.querySelector('#status-badge .status-dot');
+        const textSpan = document.getElementById('status-text');
+        const container = document.getElementById('status-badge');
+        const langData = translations[currentLang];
+
+        try {
+            const response = await fetch('/api/health');
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+            
+            if (data.status === 'active') {
+                dot.style.backgroundColor = 'var(--accent-green)';
+                dot.style.boxShadow = '0 0 10px var(--accent-green)';
+                container.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                container.style.background = 'rgba(16, 185, 129, 0.08)';
+                container.style.color = 'var(--accent-green)';
+                textSpan.textContent = langData.statusActive;
+            } else {
+                dot.style.backgroundColor = 'var(--accent-red)';
+                dot.style.boxShadow = '0 0 10px var(--accent-red)';
+                container.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+                container.style.background = 'rgba(239, 68, 68, 0.08)';
+                container.style.color = 'var(--accent-red)';
+                textSpan.textContent = langData.statusInactive;
+            }
+        } catch (e) {
+            dot.style.backgroundColor = 'var(--accent-yellow)';
+            dot.style.boxShadow = '0 0 10px var(--accent-yellow)';
+            container.style.borderColor = 'rgba(245, 158, 11, 0.2)';
+            container.style.background = 'rgba(245, 158, 11, 0.08)';
+            container.style.color = 'var(--accent-yellow)';
+            textSpan.textContent = langData.statusUnknown;
+        }
+    }
+
+    // Apply saved settings on load
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            updateThemeUI(true);
+        }
+        applyTranslations();
+        loadStats();
+        checkSystemStatus();
+        setInterval(checkSystemStatus, 15000);
+    });
+
+    async function loadStats() {
+        const statsGrid = document.getElementById('stats-grid');
+        const langData = translations[currentLang];
+        try {
+            const response = await fetch('/api/stats');
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+            
+            let html = `
+                <div class="stat-card" onclick="filterByQueue('')">
+                    <div class="stat-val">${data.total.toLocaleString()}</div>
+                    <div class="stat-label">${langData.statsTotal}</div>
+                </div>
+            `;
+            
+            for (const [queue, count] of Object.entries(data.queues)) {
+                html += `
+                    <div class="stat-card" onclick="filterByQueue('${queue}')">
+                        <div class="stat-val">${count.toLocaleString()}</div>
+                        <div class="stat-label">${queue}</div>
+                    </div>
+                `;
+            }
+            statsGrid.innerHTML = html;
+        } catch (e) {
+            console.error('Failed to load stats:', e);
+            showToast(langData.toastErrorStats, 'error');
+            statsGrid.innerHTML = `<div style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; width: 100%;">${langData.toastErrorStats}</div>`;
+        }
+    }
+
+    async function filterByQueue(queueName) {
+        searchInput.value = "";
+        spinner.style.display = 'block';
+        resultsSection.style.display = 'none';
+        timeline.innerHTML = '';
+        const langData = translations[currentLang];
+
+        try {
+            const url = queueName ? `/api/events?queue=${encodeURIComponent(queueName)}&limit=30` : '/api/events?limit=30';
+            const response = await fetch(url);
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+
+            spinner.style.display = 'none';
+            
+            let title = "";
+            if (queueName) {
+                title = currentLang === 'uk' 
+                    ? `Останні 30 подій для черги ${queueName}`
+                    : `Latest 30 events for queue ${queueName}`;
+            } else {
+                title = currentLang === 'uk'
+                    ? 'Останні 30 подій по всіх чергах'
+                    : 'Latest 30 events across all queues';
+            }
+            
+            renderEvents(data, title);
+        } catch (e) {
+            spinner.style.display = 'none';
+            showToast(langData.toastErrorQueue, 'error');
+            console.error(e);
+        }
+    }
+</script>
+</body>
+</html>
