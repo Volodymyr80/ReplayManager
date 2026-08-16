@@ -46,6 +46,11 @@ While Replay Manager is a great fit for lightweight logging and delivery trackin
 
 Replay Manager works on a **feedback-loop model**:
 
+![Replay Manager Architecture](assets/architecture_diagram.jpg)
+
+<details>
+<summary><b>Show Mermaid Diagram Code</b></summary>
+
 ```mermaid
 graph TD
     Source[Webhook / Message Source] -->|Publish| Ex[RabbitMQ exchange]
@@ -62,6 +67,8 @@ graph TD
     UI[FastAPI Web UI Port 8008] -->|Query Stats & Timeline| DB
     UI -->|Trigger Replay| Ex
 ```
+
+</details>
 
 1. **Exchange Routing**: The input exchange is configured to duplicate messages. One copy goes to the worker queue, while the other copy is sent to the `log-events` queue.
 2. **Replay Manager Consumer**: Reads new events from `log-events`, calculates their canonical payload hash, and registers them in the SQLite DB in a `PENDING` state.
