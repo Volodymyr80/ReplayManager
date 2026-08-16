@@ -118,7 +118,7 @@ Refer to [`examples/python_sender_sdk.py`](examples/python_sender_sdk.py) for a 
   "event_hash": "a4d3f568b2...",
   "status": "SUCCESS",
   "error_message": "Optional SMTP connection error trace or skip reason",
-  "routing_key": "css-worker-queue"
+  "routing_key": "my-worker-queue"
 }
 ```
 

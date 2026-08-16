@@ -12,7 +12,7 @@ RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', '127.0.0.1')
 RABBITMQ_PORT = int(os.getenv('RABBITMQ_PORT', '5672'))
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'guest')
 RABBITMQ_PASS = os.getenv('RABBITMQ_PASS', 'guest')
-SENDER_QUEUE_NAME = os.getenv('RABBITMQ_QUEUE', 'css-my-sender') # The worker queue (e.g. css-eva)
+SENDER_QUEUE_NAME = os.getenv('RABBITMQ_QUEUE', 'my-worker-queue') # The worker queue (e.g. sms-sender)
 
 def get_canonical_hash(payload_str: str) -> str:
     """
