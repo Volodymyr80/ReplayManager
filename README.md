@@ -25,7 +25,7 @@ Replay Manager works on a **feedback-loop model**:
 ```mermaid
 graph TD
     Source[Webhook / Message Source] -->|Publish| Ex[RabbitMQ exchange]
-    Ex -->|Route to worker| Q1[css-worker Queue]
+    Ex -->|Route to worker| Q1[worker-queue]
     Ex -->|Route duplicate| Q2[log-events Queue]
     
     Q1 -->|Consume| Sender[Outbound Worker / Sender]
@@ -90,14 +90,14 @@ Depending on your exchange type, configure bindings as follows:
 
 ### Option A: Using a Topic Exchange (Recommended)
 If your publisher sends messages to a `topic` exchange:
-1. Bind your worker queues to the exchange with their specific routing keys (e.g., `css-eva`, `css-ukrsib`).
-2. Bind the `log-events` queue to the **same exchange** using the wildcard routing key `#` (matches everything) or a pattern like `css-#`.
+1. Bind your worker queues to the exchange with their specific routing keys (e.g., `sms-sender`, `email-sender`).
+2. Bind the `log-events` queue to the **same exchange** using the wildcard routing key `#` (matches everything) or a pattern like `notification-#`.
 3. RabbitMQ will automatically clone and route a copy of every matching message to `log-events`.
 
 ### Option B: Using a Direct Exchange
 If your publisher sends messages to a `direct` exchange:
-1. Bind your worker queues to the exchange with their specific routing keys (e.g., routing key `css-eva` binds to queue `css-eva`).
-2. Bind the `log-events` queue to the **same exchange multiple times** using the exact same routing keys (e.g., bind `log-events` with key `css-eva`, bind `log-events` with key `css-ukrsib`).
+1. Bind your worker queues to the exchange with their specific routing keys (e.g., routing key `sms-sender` binds to queue `sms-sender`).
+2. Bind the `log-events` queue to the **same exchange multiple times** using the exact same routing keys (e.g., bind `log-events` with key `sms-sender`, bind `log-events` with key `email-sender`).
 3. Since RabbitMQ routes messages to *all* queues bound with a matching key, both your worker queue and `log-events` will receive a copy of the message.
 
 ---
