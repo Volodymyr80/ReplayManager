@@ -82,6 +82,26 @@ Access the Control Panel Web UI at `http://localhost:8008`.
 
 ---
 
+## Configuring RabbitMQ Message Duplication
+
+To log and track events, Replay Manager needs to receive a copy of every message that goes to your worker queues. This is done purely through **RabbitMQ Bindings** and does not require modifying your main application publisher code.
+
+Depending on your exchange type, configure bindings as follows:
+
+### Option A: Using a Topic Exchange (Recommended)
+If your publisher sends messages to a `topic` exchange:
+1. Bind your worker queues to the exchange with their specific routing keys (e.g., `css-eva`, `css-ukrsib`).
+2. Bind the `log-events` queue to the **same exchange** using the wildcard routing key `#` (matches everything) or a pattern like `css-#`.
+3. RabbitMQ will automatically clone and route a copy of every matching message to `log-events`.
+
+### Option B: Using a Direct Exchange
+If your publisher sends messages to a `direct` exchange:
+1. Bind your worker queues to the exchange with their specific routing keys (e.g., routing key `css-eva` binds to queue `css-eva`).
+2. Bind the `log-events` queue to the **same exchange multiple times** using the exact same routing keys (e.g., bind `log-events` with key `css-eva`, bind `log-events` with key `css-ukrsib`).
+3. Since RabbitMQ routes messages to *all* queues bound with a matching key, both your worker queue and `log-events` will receive a copy of the message.
+
+---
+
 ## Integrating Your Outbound Workers (Senders)
 
 To let Replay Manager track statuses, your workers should report their results to the `log-events` queue.
