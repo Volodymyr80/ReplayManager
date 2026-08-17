@@ -51,8 +51,14 @@ def extract_ticket_id(data: dict, body_str: str) -> str:
             
     # 3. Fallback to regex extraction
     import re
-    # Match "id":"12345" or "ticket_id":12345
-    match = re.search(r'"(?:id|ticket_id|ticketId)"\s*:\s*"?(\w+)"?', body_str)
+    # Unescape payload if wrapped in JSON string
+    target_str = body_str
+    payload_match = re.search(r'"payload"\s*:\s*"(.*)"\s*,\s*"payload_encoding"', body_str)
+    if payload_match:
+        target_str = payload_match.group(1).replace('\\"', '"').replace('\\\\', '\\')
+
+    # Match "id":"12345" or "ticket_id":12345 (with optional backslashes for safety)
+    match = re.search(r'\\?"(?:id|ticket_id|ticketId)\\?"\s*:\s*\\?"?(\w+)\\?"?', target_str)
     if match:
         return match.group(1)
         
