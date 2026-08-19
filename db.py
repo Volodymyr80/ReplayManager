@@ -68,11 +68,26 @@ def get_ticket_events(db_path: str, ticket_id: str) -> list:
     query = f"""
         SELECT * FROM events 
         WHERE ticket_id IN ({placeholders}) 
-           OR json_extract(payload, '$.subject') LIKE ? 
+           OR (
+                json_valid(payload) AND
+                coalesce(
+                    json_extract(json_extract(payload, '$.payload'), '$.id'),
+                    json_extract(payload, '$.id'),
+                    json_extract(json_extract(payload, '$.payload'), '$.ticket_id'),
+                    json_extract(payload, '$.ticket_id')
+                ) IN ({placeholders})
+              )
+           OR (
+                json_valid(payload) AND
+                coalesce(
+                    json_extract(json_extract(payload, '$.payload'), '$.subject'),
+                    json_extract(payload, '$.subject')
+                ) LIKE ?
+              )
         ORDER BY created_at ASC
     """
     
-    params = search_variants + [f"%{search_term}%"]
+    params = search_variants + search_variants + [f"%{search_term}%"]
     
     with get_db_connection(db_path) as conn:
         cursor = conn.execute(query, params)
